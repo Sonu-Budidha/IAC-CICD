@@ -1,0 +1,13 @@
+resource "aws_instance" "web" {
+  ami           = "ami-00f46ccd1cbfb363e"
+  instance_type = "t2.micro"
+
+  key_name = "bas-yuhi"
+
+  vpc_security_group_ids = [aws_security_group.web_sg.id]
+
+  tags = {
+    Name = "WebServer"
+  }
+}
+

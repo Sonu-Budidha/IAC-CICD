@@ -1,0 +1,38 @@
+name: Terraform + Docker + ECR
+on:
+  push:
+    branches: [ "main" ]
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+      - run: terraform init
+        working-directory: terraform
+      - run: terraform apply -auto-approve
+        working-directory: terraform
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+  docker-ecr:
+    needs: terraform
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+      - name: Build & Push Docker Image
+        run: |
+          IMAGE_URI=$(aws ecr describe-repositories --repository-names flask-app --query "repositories[0].repositoryUri" --output text)
+          docker build -t $IMAGE_URI ./app
+          docker push $IMAGE_URI
+
