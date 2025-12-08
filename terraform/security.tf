@@ -1,5 +1,5 @@
 resource "aws_security_group" "web_sg" {
-  name        = "web-sg"
+  name        = "web-sg1"
   description = "Allow HTTP and SSH"
 
   ingress {
@@ -25,7 +25,7 @@ resource "aws_security_group" "web_sg" {
 }
 
 resource "aws_security_group" "db_sg" {
-  name        = "db-sg"
+  name        = "db-sg1"
   description = "Allow MySQL from EC2"
 }
 
