@@ -1,5 +1,5 @@
 resource "aws_instance" "web" {
-  ami           = "ami-025ca978d4c1d9825"  # Amazon Linux 2
+  ami           = "ami-0fa3fe0fa7920f68e"  # Amazon Linux 2
   instance_type = "t2.micro"
   key_name      = "my-ssh-key"
   vpc_security_group_ids = [aws_security_group.web_sg.id]
