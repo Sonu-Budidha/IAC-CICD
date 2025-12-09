@@ -1,4 +1,4 @@
-name: Terraform + Docker + ECR
+name: Fully Automated Terraform + Docker + ECR
 
 on:
   push:
@@ -6,33 +6,49 @@ on:
 
 jobs:
 
-  terraform:
+  bootstrap:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-west-2   # SAME REGION AS S3 BACKEND + ECR
+          aws-region: us-west-2
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
 
-      - name: Terraform Init (with S3 Backend)
-        working-directory: terraform
+      - name: Terraform Init + Apply (bootstrap)
+        working-directory: bootstrap
         run: |
-          terraform init \
-            -backend-config="fklgjkjfghfjkghfjkghfjkghfjkgh" \
-            -backend-config="key=project/terraform.tfstate" \
-            -backend-config="region=us-west-2" \
-            -backend-config="encrypt=true"
+          terraform init
+          terraform apply -auto-approve
 
-      - name: Terraform Apply
+
+  terraform:
+    needs: bootstrap
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+
+      - name: Terraform Init (main project)
+        working-directory: terraform
+        run: terraform init
+
+      - name: Terraform Apply (main project)
         working-directory: terraform
         run: terraform apply -auto-approve
 
@@ -40,17 +56,15 @@ jobs:
   docker-ecr:
     needs: terraform
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-west-2  # SAME REGION AS ECR
+          aws-region: us-west-2
 
       - name: Login to ECR
         uses: aws-actions/amazon-ecr-login@v2
