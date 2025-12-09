@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "my_bucket" {
-  bucket = "my-uniqdsdfsddsdsdsdsdsdsdsdsdsdfdghfgdh"
+  bucket = "my-uniqdsdffdjhfsddsdsdsdsdsdsdsdsdsdfdghfgdh"
   acl    = "private"
 }
 
