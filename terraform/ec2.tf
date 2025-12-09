@@ -14,7 +14,7 @@ resource "aws_instance" "web" {
               curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
               unzip awscliv2.zip
               ./aws/install
-              $(aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin ${aws_ecr_repository.flask_repo.repository_url})
+              $(aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin ${aws_ecr_repository.flask_repo.repository_url})
               docker pull ${aws_ecr_repository.flask_repo.repository_url}:latest
               docker run -d -p 80:8080 ${aws_ecr_repository.flask_repo.repository_url}:latest
               EOF
