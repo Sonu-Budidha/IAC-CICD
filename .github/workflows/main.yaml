@@ -27,7 +27,7 @@ jobs:
         working-directory: terraform
         run: |
           terraform init \
-            -backend-config="bucket=my-unique-terraform-state-bucket-name" \
+            -backend-config="fklgjkjfghfjkghfjkghfjkghfjkgh" \
             -backend-config="key=project/terraform.tfstate" \
             -backend-config="region=us-west-2" \
             -backend-config="encrypt=true"
