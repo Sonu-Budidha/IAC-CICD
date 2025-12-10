@@ -49,7 +49,8 @@ jobs:
           IMAGE_URI=$(aws ecr describe-repositories \
             --repository-names flask-app1 \
             --query "repositories[0].repositoryUri" \
-            --output text)
+            --output text \
+            --region us-east-2)
 
           echo "Building and pushing Docker image: $IMAGE_URI"
           docker build -t $IMAGE_URI .
@@ -59,8 +60,7 @@ jobs:
     needs: docker-ecr
     runs-on: ubuntu-latest
     steps:
-
-      - name: Install dependencies (SSH, curl, unzip)
+      - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y openssh-client unzip curl
@@ -79,10 +79,13 @@ jobs:
           IMAGE_URI=$(aws ecr describe-repositories \
             --repository-names flask-app1 \
             --query "repositories[0].repositoryUri" \
-            --output text)
+            --output text \
+            --region us-east-2)
 
           echo "Deploying $IMAGE_URI to EC2..."
 
+          scp -o StrictHostKeyChecking=no deploy.sh $EC2_USER@$EC2_HOST:/home/$EC2_USER/deploy.sh
+
           ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST \
-            "IMAGE_URI=$IMAGE_URI bash /home/ec2-user/deploy.sh"
+            "chmod +x /home/$EC2_USER/deploy.sh && IMAGE_URI=$IMAGE_URI bash /home/$EC2_USER/deploy.sh"
 

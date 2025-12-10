@@ -3,7 +3,7 @@ export AWS_DEFAULT_REGION=us-east-2
 export AWS_REGION=us-east-2
 
 echo "Logging in to ECR..."
-docker login -u AWS -p $(aws ecr get-login-password --region us-east-2) $IMAGE_URI
+sudo docker login -u AWS -p $(aws ecr get-login-password --region us-east-2) $IMAGE_URI
 
 echo "Pulling latest image..."
 docker pull $IMAGE_URI:latest
