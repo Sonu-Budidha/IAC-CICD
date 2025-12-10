@@ -99,3 +99,6 @@ jobs:
           ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST \
             "chmod +x /home/$EC2_USER/deploy.sh && IMAGE_URI=$IMAGE_URI bash /home/$EC2_USER/deploy.sh"
 
+
+
+
