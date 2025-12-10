@@ -80,10 +80,19 @@ jobs:
           echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
+      - name: Get EC2 public IP
+        id: ec2_host
+        run: |
+          EC2_HOST=$(aws ec2 describe-instances \
+            --filters "Name=tag:Name,Values=WebServer" "Name=instance-state-name,Values=running" \
+            --query "Reservations[0].Instances[0].PublicIpAddress" \
+            --output text)
+          echo "EC2_HOST=$EC2_HOST" >> $GITHUB_ENV
+
       - name: Deploy latest container to EC2
         env:
           EC2_USER: ${{ secrets.EC2_USER }}
-          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_HOST: ${{ env.EC2_HOST }}
         run: |
           IMAGE_URI=$(aws ecr describe-repositories \
             --repository-names flask-app1 \
@@ -91,12 +100,10 @@ jobs:
             --output text \
             --region us-east-2)
 
-          echo "Deploying $IMAGE_URI to EC2..."
+          echo "Deploying $IMAGE_URI to EC2 at $EC2_HOST..."
 
-          # Copy the deploy script to EC2
           scp -o StrictHostKeyChecking=no deploy.sh $EC2_USER@$EC2_HOST:/home/$EC2_USER/deploy.sh
 
-          # Run the deploy script on EC2
           ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST \
             "chmod +x /home/$EC2_USER/deploy.sh && IMAGE_URI=$IMAGE_URI bash /home/$EC2_USER/deploy.sh"
 
