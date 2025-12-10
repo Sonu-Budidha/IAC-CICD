@@ -60,6 +60,15 @@ jobs:
     needs: docker-ecr
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -84,8 +93,10 @@ jobs:
 
           echo "Deploying $IMAGE_URI to EC2..."
 
+          # Copy the deploy script to EC2
           scp -o StrictHostKeyChecking=no deploy.sh $EC2_USER@$EC2_HOST:/home/$EC2_USER/deploy.sh
 
+          # Run the deploy script on EC2
           ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST \
             "chmod +x /home/$EC2_USER/deploy.sh && IMAGE_URI=$IMAGE_URI bash /home/$EC2_USER/deploy.sh"
 
