@@ -6,10 +6,10 @@ resource "aws_instance" "web" {
 
   user_data = <<-EOF
               #!/bin/bash
-              yum update -y
-              amazon-linux-extras install docker -y
-              service docker start
-              usermod -a -G docker ec2-user
+              sudo yum update -y
+              sudo yum install docker* -y
+              sudo systemctl start docker
+              sudo usermod -a -G docker ec2-user
 
               # Install AWS CLI v2
               curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
@@ -20,8 +20,8 @@ resource "aws_instance" "web" {
               aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin ${aws_ecr_repository.flask_repo.repository_url}
 
               # Pull and run latest image
-              docker pull ${aws_ecr_repository.flask_repo.repository_url}:latest
-              docker run -d -p 80:8080 ${aws_ecr_repository.flask_repo.repository_url}:latest
+              sudo docker pull ${aws_ecr_repository.flask_repo.repository_url}:latest
+              sudo docker run -d -p 80:8080 ${aws_ecr_repository.flask_repo.repository_url}:latest
               EOF
 
   depends_on = [aws_ecr_repository.flask_repo]
