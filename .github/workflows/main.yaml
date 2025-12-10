@@ -83,24 +83,23 @@ jobs:
 
           echo "Deploying $IMAGE_URI to EC2..."
 
-          ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST <<EOF
-            # Ensure AWS CLI commands know the region
-            export AWS_DEFAULT_REGION=us-east-2
-            export AWS_REGION=us-east-2
+          ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST "IMAGE_URI=$IMAGE_URI bash -s" <<'EOF'
+export AWS_DEFAULT_REGION=us-east-2
+export AWS_REGION=us-east-2
 
-            echo "Logging in to ECR..."
-            sudo docker login -u AWS -p \$(aws ecr get-login-password --region us-east-2) $IMAGE_URI
+echo "Logging in to ECR..."
+sudo docker login -u AWS -p $(aws ecr get-login-password --region us-east-2) $IMAGE_URI
 
-            echo "Pulling latest image..."
-            sudo docker pull $IMAGE_URI:latest
+echo "Pulling latest image..."
+sudo docker pull $IMAGE_URI:latest
 
-            echo "Stopping old container (if running)..."
-            sudo docker stop app || true
-            sudo docker rm app || true
+echo "Stopping old container (if running)..."
+sudo docker stop app || true
+sudo docker rm app || true
 
-            echo "Starting new container..."
-            sudo docker run -d --name app -p 8080:8080 $IMAGE_URI:latest
+echo "Starting new container..."
+sudo docker run -d --name app -p 8080:8080 $IMAGE_URI:latest
 
-            echo "Deployment completed!"
+echo "Deployment completed!"
 EOF
 
