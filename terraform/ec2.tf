@@ -1,7 +1,7 @@
 resource "aws_instance" "web" {
   ami                    = "ami-00e428798e77d38d9"  # Amazon Linux 2
   instance_type          = "t2.micro"
-  key_name               = "my-ssh-key"
+  key_name               = "basyuhi46"
   vpc_security_group_ids = [aws_security_group.web_sg.id]
 
   user_data = <<-EOF
@@ -10,8 +10,8 @@ resource "aws_instance" "web" {
               sudo yum install docker* -y
               sudo systemctl start docker
               sudo usermod -a -G docker ec2-user
-	      sudo hostnamectl set-hostname weberver
-              # Install AWS CLI v2
+              
+	      # Install AWS CLI v2
               curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
               unzip awscliv2.zip
               ./aws/install
