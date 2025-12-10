@@ -20,8 +20,8 @@ resource "aws_instance" "web" {
               aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin ${aws_ecr_repository.flask_repo.repository_url}
 
               # Pull and run latest image
-              sudo docker pull ${aws_ecr_repository.flask_repo.repository_url}:latest
-              sudo docker run -d -p 80:8080 ${aws_ecr_repository.flask_repo.repository_url}:latest
+              docker pull ${aws_ecr_repository.flask_repo.repository_url}:latest
+              docker run -d -p 8080:8080 ${aws_ecr_repository.flask_repo.repository_url}:latest
               EOF
 
   depends_on = [aws_ecr_repository.flask_repo]
