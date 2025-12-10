@@ -60,18 +60,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-2
-
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y openssh-client unzip curl
-
       - name: Add SSH key
         run: |
           mkdir -p ~/.ssh
@@ -87,13 +75,25 @@ jobs:
             --output text)
           echo "EC2_HOST=$EC2_HOST" >> $GITHUB_ENV
 
-      - name: Deploy latest container to EC2
+      - name: Prepare EC2 (install Docker & AWS CLI)
+        env:
+          EC2_USER: ${{ secrets.EC2_USER }}
+          EC2_HOST: ${{ env.EC2_HOST }}
+        run: |
+          ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST <<'EOF'
+            sudo yum update -y
+            sudo yum install -y docker
+            sudo systemctl enable docker
+            sudo systemctl start docker
+            sudo usermod -aG docker ec2-user
+EOF
+
+      - name: Deploy latest container
         env:
           EC2_USER: ${{ secrets.EC2_USER }}
           EC2_HOST: ${{ env.EC2_HOST }}
           IMAGE_URI: ${{ env.IMAGE_URI }}
         run: |
-          echo "Deploying $IMAGE_URI to EC2 at $EC2_HOST..."
           scp -o StrictHostKeyChecking=no deploy.sh $EC2_USER@$EC2_HOST:/home/$EC2_USER/deploy.sh
           ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST \
             "chmod +x /home/$EC2_USER/deploy.sh && IMAGE_URI=$IMAGE_URI bash /home/$EC2_USER/deploy.sh"
